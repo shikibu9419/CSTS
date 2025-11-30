@@ -36,13 +36,32 @@
 
 ## Setup
 
-Set up the virtual environment using following commands.
+### Option A: uv (pip)
+Use this path if you prefer a lightweight, pip-based environment.
 
+```shell
+# 1) Create a Python 3.8 environment
+uv python install 3.8
+uv venv --python 3.8 .venv
+source .venv/bin/activate
+
+# 2) Install PyTorch wheels that match your hardware
+#    (replace the EXTRA_INDEX_URL with the CUDA version you need, or cpu)
+UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cu110 \
+  uv pip install torch==1.7.0 torchvision==0.8.0 torchaudio==0.7.0
+
+# 3) Install the remaining dependencies and this repo in editable mode
+uv pip install -r requirements-uv.txt
+uv pip install -e .
+```
+
+### Option B: Conda (original)
 ```shell
 conda env create -f virtual_env.yaml
 conda activate csts
 python setup.py build develop
 ```
+Make sure `ffmpeg` is available on your system before running the data preprocessing scripts.
 
 ## Dataset
 
@@ -182,6 +201,26 @@ Note: You need to replace `DATA.PATH_PREFIX` with your local path to video clips
 
 You may find it's hard to fully reproduce the results if you train the model again, even though the seed is already fixed. We also observed this issue but failed to fix it. It may be an internal bug in the slowfast codebase, which we build our own model on. However, the difference should be small, and you are still able to get the same number as reported in the paper by running inference with our released weights.
 
+## Demo
+
+Run a single-clip demo without the evaluation dataloader.
+
+```shell
+python tools/demo_gaze_forecast.py \
+  --video-path /path/to/clip.mp4 \
+  --checkpoint /path/to/checkpoint_epoch_00005.pyth \
+  --config configs/Ego4D/CSTS_Ego4D_Gaze_Forecast.yaml \
+  --output-dir demo_outputs
+```
+
+Outputs are written to `demo_outputs/`:
+- `{clip_name}_predictions.json`: normalized gaze coordinates, frame indices, and timestamps.
+- `{clip_name}_heatmaps.npy`: raw model heatmaps for each predicted frame.
+- `{clip_name}_frames/frame_XXX.png`: optional overlays showing the forecast point on future frames.
+
+The script mirrors the test preprocessing: it uses the first 86 frames (~3s) plus audio as context and forecasts the next 8 gaze locations. Provide a pre-trimmed 5s clip (or adjust `--frames-length`) for best results.
+
+A notebook version lives at `notebooks/demo_gaze_forecast.ipynb` and wraps the same script so you can run the demo and visualize predictions interactively.
 
 ## BibTeX
 

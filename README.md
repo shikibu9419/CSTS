@@ -40,15 +40,19 @@
 Use this path if you prefer a lightweight, pip-based environment.
 
 ```shell
-# 1) Create a Python 3.8 environment
-uv python install 3.8
-uv venv --python 3.8 .venv
+# 1) Create a Python 3.10 environment
+uv python install 3.10
+uv venv --python 3.10 .venv
 source .venv/bin/activate
 
-# 2) Install PyTorch wheels that match your hardware
-#    (replace the EXTRA_INDEX_URL with the CUDA version you need, or cpu)
-UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cu110 \
-  uv pip install torch==1.7.0 torchvision==0.8.0 torchaudio==0.7.0
+# 2) Install PyTorch wheels that match your hardware.
+#    Replace the index URL with the CUDA version you need, or use the CPU index.
+#    Example (CUDA 11.6):
+uv pip install torch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 \
+  --index-url https://download.pytorch.org/whl/cu116
+#    Example (CPU):
+# uv pip install torch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 \
+#   --index-url https://download.pytorch.org/whl/cpu
 
 # 3) Install the remaining dependencies and this repo in editable mode
 uv pip install -r requirements-uv.txt
